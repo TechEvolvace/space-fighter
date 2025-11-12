@@ -1,121 +1,124 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace group_12_assignment7;
 
 public class TitleScreenUI
 {
+    // UI display and button fields
     private SpriteFont _font;
     private int _screenWidth;
     private int _screenHeight;
+    
+    // Button states and positions
     public bool IsStartButtonPressed { get; private set; }
+    public bool IsInstructionsButtonPressed { get; private set; }
     public bool IsHighScoresButtonPressed { get; private set; }
     
     private Rectangle _startButtonRect;
+    private Rectangle _instructionsButtonRect;
     private Rectangle _highScoresButtonRect;
-    private bool _isStartButtonHovered;
-    private bool _isHighScoresButtonHovered;
     
-    private const float TITLE_SCALE = 3.5f; // Increased from 2f
-    private const int BUTTON_WIDTH = 200;
-    private const int BUTTON_HEIGHT = 60;
-    private const int BUTTON_CORNER_RADIUS = 15; // For rounded corners
+    private bool _isStartHovered;
+    private bool _isInstructionsHovered;
+    private bool _isHighScoresHovered;
 
     public TitleScreenUI(SpriteFont font, int screenWidth, int screenHeight)
     {
+        // Initialize UI components
         _font = font;
         _screenWidth = screenWidth;
         _screenHeight = screenHeight;
+        
         IsStartButtonPressed = false;
+        IsInstructionsButtonPressed = false;
         IsHighScoresButtonPressed = false;
-        _isStartButtonHovered = false;
-        _isHighScoresButtonHovered = false;
         
-        // Define button dimensions - positioned side by side
+        _isStartHovered = false;
+        _isInstructionsHovered = false;
+        _isHighScoresHovered = false;
+
+        // Define button positions (centered, stacked vertically)
+        int buttonWidth = 200;
+        int buttonHeight = 60;
         int centerX = screenWidth / 2;
-        int buttonSpacing = 50;
-        int buttonAreaY = screenHeight - 150;
-        
-        // START button (left)
-        _startButtonRect = new Rectangle(
-            centerX - buttonSpacing / 2 - BUTTON_WIDTH,
-            buttonAreaY,
-            BUTTON_WIDTH,
-            BUTTON_HEIGHT
-        );
-        
-        // HIGH SCORES button (right)
-        _highScoresButtonRect = new Rectangle(
-            centerX + buttonSpacing / 2,
-            buttonAreaY,
-            BUTTON_WIDTH,
-            BUTTON_HEIGHT
-        );
+        int startY = screenHeight / 2;
+        int spacing = 80;
+
+        _startButtonRect = new Rectangle(centerX - buttonWidth / 2, startY, buttonWidth, buttonHeight);
+        _instructionsButtonRect = new Rectangle(centerX - buttonWidth / 2, startY + spacing, buttonWidth, buttonHeight);
+        _highScoresButtonRect = new Rectangle(centerX - buttonWidth / 2, startY + spacing * 2, buttonWidth, buttonHeight);
     }
 
     public void Update(KeyboardState keyboardState, MouseState mouseState)
     {
+        // Reset button states each frame
         IsStartButtonPressed = false;
+        IsInstructionsButtonPressed = false;
         IsHighScoresButtonPressed = false;
-        _isStartButtonHovered = false;
-        _isHighScoresButtonHovered = false;
         
-        // Check START button
+        _isStartHovered = false;
+        _isInstructionsHovered = false;
+        _isHighScoresHovered = false;
+
+        // Check Start button
         if (_startButtonRect.Contains(mouseState.Position))
         {
-            _isStartButtonHovered = true;
+            _isStartHovered = true;
             if (mouseState.LeftButton == ButtonState.Pressed)
-            {
                 IsStartButtonPressed = true;
-            }
         }
-        
-        // Check HIGH SCORES button
+
+        // Check Instructions button
+        if (_instructionsButtonRect.Contains(mouseState.Position))
+        {
+            _isInstructionsHovered = true;
+            if (mouseState.LeftButton == ButtonState.Pressed)
+                IsInstructionsButtonPressed = true;
+        }
+
+        // Check High Scores button
         if (_highScoresButtonRect.Contains(mouseState.Position))
         {
-            _isHighScoresButtonHovered = true;
+            _isHighScoresHovered = true;
             if (mouseState.LeftButton == ButtonState.Pressed)
-            {
                 IsHighScoresButtonPressed = true;
-            }
         }
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        // Draw semi-transparent background
+        // Draw background
         spriteBatch.Draw(
-            texture: CreateFilledRectangle(spriteBatch.GraphicsDevice, _screenWidth, _screenHeight, Color.Black),
-            position: Vector2.Zero,
-            color: Color.White * 0.7f
+            CreateFilledRectangle(spriteBatch.GraphicsDevice, _screenWidth, _screenHeight, Color.Black),
+            Vector2.Zero,
+            Color.White
         );
 
-        // Draw title - LARGER and properly centered with scale
+        // Draw title
         string title = "SPACE FIGHTER";
         Vector2 titleSize = _font.MeasureString(title);
-        // Account for scale when centering
-        Vector2 titlePosition = new Vector2(
-            _screenWidth / 2 - (titleSize.X * TITLE_SCALE) / 2,
-            80
-        );
-        spriteBatch.DrawString(_font, title, titlePosition, Color.Cyan, 0f, Vector2.Zero, TITLE_SCALE, SpriteEffects.None, 0f);
+        Vector2 titlePosition = new Vector2(_screenWidth / 2 - (titleSize.X * 3) / 2, 50);
+        spriteBatch.DrawString(_font, title, titlePosition, Color.Gold, 0f, Vector2.Zero, 3f, SpriteEffects.None, 0f);
 
-        // Draw START button with rounded corners
-        DrawRoundedButton(spriteBatch, _startButtonRect, "START", _isStartButtonHovered);
-        
-        // Draw HIGH SCORES button with rounded corners
-        DrawRoundedButton(spriteBatch, _highScoresButtonRect, "HIGH SCORES", _isHighScoresButtonHovered);
+        // Draw all three buttons
+        DrawRoundedButton(spriteBatch, _startButtonRect, "START", _isStartHovered);
+        DrawRoundedButton(spriteBatch, _instructionsButtonRect, "INSTRUCTIONS", _isInstructionsHovered);
+        DrawRoundedButton(spriteBatch, _highScoresButtonRect, "HIGH SCORES", _isHighScoresHovered);
     }
 
     private void DrawRoundedButton(SpriteBatch spriteBatch, Rectangle buttonRect, string text, bool isHovered)
     {
+        // Draw button with hover color change
         Color buttonColor = isHovered ? Color.Cyan : Color.White;
-        
-        // Draw rounded rectangle (button background)
-        DrawRoundedRectangle(spriteBatch, buttonRect, BUTTON_CORNER_RADIUS, buttonColor);
-        
-        // Draw button text centered
+        DrawRoundedRectangle(spriteBatch, buttonRect, 10, buttonColor);
+
+        // Draw centered text
         Vector2 textSize = _font.MeasureString(text);
         Vector2 textPosition = new Vector2(
             buttonRect.X + buttonRect.Width / 2 - textSize.X / 2,
@@ -126,46 +129,37 @@ public class TitleScreenUI
 
     private void DrawRoundedRectangle(SpriteBatch spriteBatch, Rectangle rect, int cornerRadius, Color color)
     {
-        // Draw main rectangle body
+        // Draw main body
         spriteBatch.Draw(
             CreateFilledRectangle(spriteBatch.GraphicsDevice, rect.Width - cornerRadius * 2, rect.Height, color),
             new Vector2(rect.X + cornerRadius, rect.Y),
             Color.White
         );
-        
-        // Draw top rectangle
+
+        // Draw top and bottom edges
         spriteBatch.Draw(
             CreateFilledRectangle(spriteBatch.GraphicsDevice, rect.Width, cornerRadius, color),
             new Vector2(rect.X, rect.Y + cornerRadius),
             Color.White
         );
-        
-        // Draw bottom rectangle
+
         spriteBatch.Draw(
             CreateFilledRectangle(spriteBatch.GraphicsDevice, rect.Width, cornerRadius, color),
             new Vector2(rect.X, rect.Y + rect.Height - cornerRadius),
             Color.White
         );
-        
-        // Draw four corner circles (using small filled rectangles to approximate rounded corners)
+
+        // Draw rounded corners
         int cornerSize = cornerRadius;
-        
-        // Top-left corner
         DrawCorner(spriteBatch, rect.X + cornerRadius, rect.Y + cornerRadius, cornerSize, color, 0);
-        
-        // Top-right corner
         DrawCorner(spriteBatch, rect.X + rect.Width - cornerRadius, rect.Y + cornerRadius, cornerSize, color, 1);
-        
-        // Bottom-left corner
         DrawCorner(spriteBatch, rect.X + cornerRadius, rect.Y + rect.Height - cornerRadius, cornerSize, color, 2);
-        
-        // Bottom-right corner
         DrawCorner(spriteBatch, rect.X + rect.Width - cornerRadius, rect.Y + rect.Height - cornerRadius, cornerSize, color, 3);
     }
 
     private void DrawCorner(SpriteBatch spriteBatch, int centerX, int centerY, int radius, Color color, int corner)
     {
-        // Simplified corner drawing using small filled rectangles
+        // Draw quarter circle corner pixels
         for (int i = 0; i < radius; i++)
         {
             for (int j = 0; j < radius; j++)
@@ -175,28 +169,12 @@ public class TitleScreenUI
                 {
                     int x = centerX;
                     int y = centerY;
-                    
-                    if (corner == 0) // Top-left
-                    {
-                        x -= i;
-                        y -= j;
-                    }
-                    else if (corner == 1) // Top-right
-                    {
-                        x += i;
-                        y -= j;
-                    }
-                    else if (corner == 2) // Bottom-left
-                    {
-                        x -= i;
-                        y += j;
-                    }
-                    else if (corner == 3) // Bottom-right
-                    {
-                        x += i;
-                        y += j;
-                    }
-                    
+
+                    if (corner == 0) { x -= i; y -= j; }
+                    else if (corner == 1) { x += i; y -= j; }
+                    else if (corner == 2) { x -= i; y += j; }
+                    else if (corner == 3) { x += i; y += j; }
+
                     spriteBatch.Draw(
                         CreateFilledRectangle(spriteBatch.GraphicsDevice, 1, 1, color),
                         new Vector2(x, y),
@@ -209,6 +187,7 @@ public class TitleScreenUI
 
     private Texture2D CreateFilledRectangle(GraphicsDevice graphicsDevice, int width, int height, Color color)
     {
+        // Create solid color texture for drawing shapes
         Texture2D texture = new Texture2D(graphicsDevice, width, height);
         Color[] data = new Color[width * height];
         for (int i = 0; i < data.Length; i++)

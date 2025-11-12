@@ -6,12 +6,16 @@ namespace group_12_assignment7;
 
 public class GameOverUI
 {
+    // UI display fields
     private SpriteFont _font;
     private int _screenWidth;
     private int _screenHeight;
+    
+    // Game result tracking
     private bool _playerVictorious;
     private int _finalScore;
     
+    // Button states
     public bool IsReturnToMenuPressed { get; private set; }
     public bool IsPlayAgainPressed { get; private set; }
     
@@ -22,6 +26,7 @@ public class GameOverUI
 
     public GameOverUI(SpriteFont font, int screenWidth, int screenHeight)
     {
+        // Initialize UI components
         _font = font;
         _screenWidth = screenWidth;
         _screenHeight = screenHeight;
@@ -29,20 +34,20 @@ public class GameOverUI
         _finalScore = 0;
         IsReturnToMenuPressed = false;
         IsPlayAgainPressed = false;
-        
-        // Define button dimensions
+
+        // Define button positions
         int buttonWidth = 180;
         int buttonHeight = 50;
         int spacing = 40;
         int centerX = screenWidth / 2;
-        
+
         _playAgainButtonRect = new Rectangle(
             centerX - buttonWidth - spacing / 2,
             screenHeight - 150,
             buttonWidth,
             buttonHeight
         );
-        
+
         _menuButtonRect = new Rectangle(
             centerX + spacing / 2,
             screenHeight - 150,
@@ -53,26 +58,28 @@ public class GameOverUI
 
     public void SetGameResult(bool victorious, int score)
     {
+        // Store the game outcome and final score for display
         _playerVictorious = victorious;
         _finalScore = score;
     }
 
     public void Update(KeyboardState keyboardState, MouseState mouseState)
     {
+        // Reset button states each frame
         IsReturnToMenuPressed = false;
         IsPlayAgainPressed = false;
         _isPlayAgainHovered = false;
         _isMenuHovered = false;
-        
-        // Check play again button
+
+        // Check Play Again button hover and click
         if (_playAgainButtonRect.Contains(mouseState.Position))
         {
             _isPlayAgainHovered = true;
             if (mouseState.LeftButton == ButtonState.Pressed)
                 IsPlayAgainPressed = true;
         }
-        
-        // Check menu button
+
+        // Check Main Menu button hover and click
         if (_menuButtonRect.Contains(mouseState.Position))
         {
             _isMenuHovered = true;
@@ -83,17 +90,17 @@ public class GameOverUI
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        // Draw semi-transparent overlay
+        // Draw semi-transparent background overlay
         DrawRectangle(spriteBatch, 0, 0, _screenWidth, _screenHeight, Color.Black * 0.8f);
 
-        // Draw title
+        // Draw title - VICTORY or GAME OVER based on result
         string title = _playerVictorious ? "VICTORY!" : "GAME OVER";
         Color titleColor = _playerVictorious ? Color.LimeGreen : Color.Red;
         Vector2 titleSize = _font.MeasureString(title);
         Vector2 titlePosition = new Vector2(_screenWidth / 2 - titleSize.X / 2, 100);
         spriteBatch.DrawString(_font, title, titlePosition, titleColor, 0f, Vector2.Zero, 2.5f, SpriteEffects.None, 0f);
 
-        // Draw message
+        // Draw result message
         string message = _playerVictorious ? "You defeated all Tie Fighters!" : "You were defeated...";
         Vector2 messageSize = _font.MeasureString(message);
         Vector2 messagePosition = new Vector2(_screenWidth / 2 - messageSize.X / 2, 250);
@@ -112,9 +119,11 @@ public class GameOverUI
 
     private void DrawButton(SpriteBatch spriteBatch, Rectangle buttonRect, string text, bool isHovered)
     {
+        // Draw button with hover color change (White/Cyan)
         Color buttonColor = isHovered ? Color.Cyan : Color.White;
         DrawRectangle(spriteBatch, buttonRect.X, buttonRect.Y, buttonRect.Width, buttonRect.Height, buttonColor);
-        
+
+        // Draw centered text on button
         Vector2 textSize = _font.MeasureString(text);
         Vector2 textPosition = new Vector2(
             buttonRect.X + buttonRect.Width / 2 - textSize.X / 2,
@@ -125,6 +134,7 @@ public class GameOverUI
 
     private void DrawRectangle(SpriteBatch spriteBatch, int x, int y, int width, int height, Color color)
     {
+        // Create and draw a solid color rectangle
         Texture2D texture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
         texture.SetData(new[] { Color.White });
         spriteBatch.Draw(texture, new Rectangle(x, y, width, height), color);

@@ -10,116 +10,168 @@ namespace group_12_assignment7;
 
 public class Game1 : Game
 {
+    // Graphics setup and game state fields
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private SpriteFont _barlowFont;
     
-    // Game state management
+    // Game state tracking
     private GameState _currentGameState;
-    private enum GameState { TitleScreen, Playing, GameOver, HighScoreEntry, HighScoresView }
+    private GameState _previousGameState;
+    private enum GameState { TitleScreen, Playing, GameOver, HighScoreEntry, HighScoresView, Instructions, Paused }
     
     // Screen dimensions
     private const int SCREEN_WIDTH = 1200;
     private const int SCREEN_HEIGHT = 800;
     
-    // UI/Game components
+    // UI components
     private TitleScreenUI _titleScreenUI;
     private HUDDisplay _hudDisplay;
     private GameOverUI _gameOverUI;
     private HighScoreEntryUI _highScoreEntryUI;
     private ScoreManager _scoreManager;
+    private InstructionsUI _instructionsUI;
+    private PauseMenuUI _pauseMenuUI;
     
-    // Game logic tracking
+    // Game stats
     private int _currentScore;
     private int _playerHealth;
     private int _enemiesDefeated;
     private bool _playerVictorious;
     
+    // Pause and input tracking
+    private KeyboardState _previousKeyboardState;
+    private bool _pauseStateChanged = false;
+    
+    // High scores screen back button
+    private Rectangle _highScoresBackButtonRect;
+    private bool _isHighScoresBackButtonHovered = false;
+
     public Game1()
     {
+        // Set up graphics manager and window settings
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
         
-        // Set screen dimensions
         _graphics.PreferredBackBufferWidth = SCREEN_WIDTH;
         _graphics.PreferredBackBufferHeight = SCREEN_HEIGHT;
     }
 
     protected override void Initialize()
     {
+        // Set initial game state and player stats
         _currentGameState = GameState.TitleScreen;
+        _previousGameState = GameState.TitleScreen;
         _currentScore = 0;
         _playerHealth = 100;
         _enemiesDefeated = 0;
         _playerVictorious = false;
+        _previousKeyboardState = Keyboard.GetState();
+        _pauseStateChanged = false;
+        
+        // Initialize high scores back button rectangle
+        _highScoresBackButtonRect = new Rectangle(
+            SCREEN_WIDTH / 2 - 75,
+            SCREEN_HEIGHT - 100,
+            150,
+            50
+        );
         
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
+        // Load graphics and fonts
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         _barlowFont = Content.Load<SpriteFont>("fonts/Barlow");
         
-        // Initialize score manager with font
+        // Load and initialize score manager
         _scoreManager = new ScoreManager("highscores.txt", _barlowFont);
         _scoreManager.LoadScores();
         
-        // Initialize UI components
+        // Initialize all UI screens
         _titleScreenUI = new TitleScreenUI(_barlowFont, SCREEN_WIDTH, SCREEN_HEIGHT);
         _hudDisplay = new HUDDisplay(_barlowFont, SCREEN_WIDTH, SCREEN_HEIGHT);
         _gameOverUI = new GameOverUI(_barlowFont, SCREEN_WIDTH, SCREEN_HEIGHT);
         _highScoreEntryUI = new HighScoreEntryUI(_barlowFont, SCREEN_WIDTH, SCREEN_HEIGHT);
+        _instructionsUI = new InstructionsUI(_barlowFont, SCREEN_WIDTH, SCREEN_HEIGHT);
+        _pauseMenuUI = new PauseMenuUI(_barlowFont, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
 
     protected override void Update(GameTime gameTime)
     {
+        // Get current input states
         KeyboardState keyboardState = Keyboard.GetState();
         MouseState mouseState = Mouse.GetState();
         
-        // Exit with ESC
-        if (keyboardState.IsKeyDown(Keys.Escape))
+        // Exit game with ESC (but not during gameplay)
+        if (keyboardState.IsKeyDown(Keys.Escape) && _currentGameState != GameState.Playing)
             Exit();
+        
+        _pauseStateChanged = false;
+        
+        // Handle pause key - requires P press (not hold) to toggle pause
+        if (_currentGameState == GameState.Playing && keyboardState.IsKeyDown(Keys.P) && !_previousKeyboardState.IsKeyDown(Keys.P))
+        {
+            _previousGameState = GameState.Playing;
+            _currentGameState = GameState.Paused;
+            _previousKeyboardState = keyboardState;
+            _pauseStateChanged = true;
+        }
 
+        // Route to appropriate update method based on current state
         switch (_currentGameState)
         {
             case GameState.TitleScreen:
                 UpdateTitleScreen(keyboardState, mouseState);
                 break;
-                
             case GameState.Playing:
                 UpdateGameplay(gameTime, keyboardState, mouseState);
                 break;
-                
             case GameState.GameOver:
                 UpdateGameOver(keyboardState, mouseState);
                 break;
-                
             case GameState.HighScoreEntry:
                 UpdateHighScoreEntry(keyboardState);
                 break;
-                
             case GameState.HighScoresView:
-                UpdateHighScoresView(keyboardState);
+                UpdateHighScoresView(keyboardState, mouseState);
+                break;
+            case GameState.Instructions:
+                UpdateInstructions(keyboardState, mouseState);
+                break;
+            case GameState.Paused:
+                UpdatePauseMenu(keyboardState, mouseState);
                 break;
         }
 
+        // Only update keyboard state if pause state didn't change this frame
+        if (!_pauseStateChanged)
+        {
+            _previousKeyboardState = keyboardState;
+        }
+        
         base.Update(gameTime);
     }
 
     private void UpdateTitleScreen(KeyboardState keyboardState, MouseState mouseState)
     {
+        // Update title screen and handle button presses
         _titleScreenUI.Update(keyboardState, mouseState);
         
-        // Start game when player presses Space or clicks Start button
         if (keyboardState.IsKeyDown(Keys.Space) || _titleScreenUI.IsStartButtonPressed)
         {
             StartNewGame();
             _currentGameState = GameState.Playing;
         }
         
-        // View high scores when clicking High Scores button
+        if (_titleScreenUI.IsInstructionsButtonPressed)
+        {
+            _currentGameState = GameState.Instructions;
+        }
+        
         if (_titleScreenUI.IsHighScoresButtonPressed)
         {
             _currentGameState = GameState.HighScoresView;
@@ -128,22 +180,18 @@ public class Game1 : Game
 
     private void UpdateGameplay(GameTime gameTime, KeyboardState keyboardState, MouseState mouseState)
     {
-        // Update HUD with current game state
+        // Update HUD with current game stats
         _hudDisplay.UpdateScore(_currentScore);
         _hudDisplay.UpdateHealth(_playerHealth);
         _hudDisplay.UpdateEnemiesDefeated(_enemiesDefeated);
         
-        // TODO: Integrate with Player and Enemy classes from Samuel and James
-        // This is where gameplay logic will be called
-        
-        // Check for game end conditions (placeholder logic)
-        // In actual implementation, this will check player/enemy states
+        // Check win/loss conditions
         if (_playerHealth <= 0)
         {
             _playerVictorious = false;
             TransitionToGameOver();
         }
-        else if (_enemiesDefeated >= 10) // Example: defeat 10 enemies to win
+        else if (_enemiesDefeated >= 10)
         {
             _playerVictorious = true;
             TransitionToGameOver();
@@ -152,6 +200,7 @@ public class Game1 : Game
 
     private void UpdateGameOver(KeyboardState keyboardState, MouseState mouseState)
     {
+        // Update game over screen and handle navigation
         _gameOverUI.Update(keyboardState, mouseState);
         
         if (keyboardState.IsKeyDown(Keys.Space) || _gameOverUI.IsReturnToMenuPressed)
@@ -167,10 +216,12 @@ public class Game1 : Game
 
     private void UpdateHighScoreEntry(KeyboardState keyboardState)
     {
+        // Update high score entry form
         _highScoreEntryUI.Update(keyboardState);
         
         if (_highScoreEntryUI.IsSubmitted)
         {
+            // Save new high score
             string playerName = _highScoreEntryUI.GetPlayerName();
             _scoreManager.AddScore(new HighScore(playerName, _currentScore));
             _scoreManager.SaveScores();
@@ -178,10 +229,49 @@ public class Game1 : Game
         }
     }
 
-    private void UpdateHighScoresView(KeyboardState keyboardState)
+    private void UpdateHighScoresView(KeyboardState keyboardState, MouseState mouseState)
     {
-        // Return to title screen when pressing any key
-        if (keyboardState.GetPressedKeys().Length > 0)
+        // Check if mouse is hovering over back button
+        _isHighScoresBackButtonHovered = _highScoresBackButtonRect.Contains(mouseState.Position);
+        
+        // Check if Back button is clicked
+        if (_isHighScoresBackButtonHovered && mouseState.LeftButton == ButtonState.Pressed)
+        {
+            _currentGameState = GameState.TitleScreen;
+        }
+        
+        // Also allow ESC to go back
+        if (keyboardState.IsKeyDown(Keys.Escape))
+        {
+            _currentGameState = GameState.TitleScreen;
+        }
+    }
+
+    private void UpdateInstructions(KeyboardState keyboardState, MouseState mouseState)
+    {
+        // Update instructions screen and handle back button
+        _instructionsUI.Update(keyboardState, mouseState);
+        
+        if (_instructionsUI.IsBackPressed)
+        {
+            _currentGameState = GameState.TitleScreen;
+        }
+    }
+
+    private void UpdatePauseMenu(KeyboardState keyboardState, MouseState mouseState)
+    {
+        // Update pause menu and handle resume/main menu buttons
+        _pauseMenuUI.Update(keyboardState, mouseState);
+        
+        if (_pauseMenuUI.IsResumePressed)
+        {
+            _currentGameState = GameState.Playing;
+            _previousKeyboardState = keyboardState;
+            _pauseStateChanged = true;
+        }
+        
+        // Main Menu button should go to TitleScreen
+        if (_pauseMenuUI.IsMainMenuPressed)
         {
             _currentGameState = GameState.TitleScreen;
         }
@@ -189,9 +279,10 @@ public class Game1 : Game
 
     private void TransitionToGameOver()
     {
+        // Set up game over screen
         _gameOverUI.SetGameResult(_playerVictorious, _currentScore);
         
-        // Check if score qualifies for high scores
+        // If high score, go to entry screen; otherwise show game over
         if (_scoreManager.IsHighScore(_currentScore))
         {
             _currentGameState = GameState.HighScoreEntry;
@@ -205,40 +296,44 @@ public class Game1 : Game
 
     private void StartNewGame()
     {
+        // Reset all game stats for new game
         _currentScore = 0;
         _playerHealth = 100;
         _enemiesDefeated = 0;
         _playerVictorious = false;
-        // TODO: Initialize Player and Enemy objects here
     }
 
     protected override void Draw(GameTime gameTime)
     {
+        // Clear screen and begin drawing
         GraphicsDevice.Clear(Color.Black);
         _spriteBatch.Begin();
 
+        // Draw appropriate screen based on game state
         switch (_currentGameState)
         {
             case GameState.TitleScreen:
                 _titleScreenUI.Draw(_spriteBatch);
                 break;
-                
             case GameState.Playing:
-                // TODO: Draw Player and Enemy objects here
                 _hudDisplay.Draw(_spriteBatch);
                 break;
-                
             case GameState.GameOver:
                 _gameOverUI.Draw(_spriteBatch);
                 break;
-                
             case GameState.HighScoreEntry:
                 _highScoreEntryUI.Draw(_spriteBatch);
                 _scoreManager.DrawHighScores(_spriteBatch, 100, 200);
                 break;
-                
             case GameState.HighScoresView:
                 DrawHighScoresScreen();
+                break;
+            case GameState.Instructions:
+                _instructionsUI.Draw(_spriteBatch);
+                break;
+            case GameState.Paused:
+                _hudDisplay.Draw(_spriteBatch);
+                _pauseMenuUI.Draw(_spriteBatch);
                 break;
         }
 
@@ -252,31 +347,98 @@ public class Game1 : Game
         Texture2D backgroundTexture = CreateFilledRectangle(_spriteBatch.GraphicsDevice, SCREEN_WIDTH, SCREEN_HEIGHT, Color.Black);
         _spriteBatch.Draw(backgroundTexture, Vector2.Zero, Color.White * 0.9f);
 
-        // Draw SINGLE title (removed duplicate from ScoreManager)
+        // Draw title
         string title = "HIGH SCORES";
         Vector2 titleSize = _barlowFont.MeasureString(title);
         Vector2 titlePosition = new Vector2(
             SCREEN_WIDTH / 2 - (titleSize.X * 2.5f) / 2,
-            40  // Moved up a bit to accommodate larger scores list
+            40
         );
         _spriteBatch.DrawString(_barlowFont, title, titlePosition, Color.Gold, 0f, Vector2.Zero, 2.5f, SpriteEffects.None, 0f);
 
-        // Draw high scores list - ADJUSTED POSITIONING for bigger text
-        // X position centered, Y position adjusted to give proper spacing from title
+        // Draw high scores list
         _scoreManager.DrawHighScores(_spriteBatch, SCREEN_WIDTH / 2 - 200, 160);
 
-        // Draw instructions
-        string instructions = "Press any key to return to menu";
-        Vector2 instructionsSize = _barlowFont.MeasureString(instructions);
-        Vector2 instructionsPosition = new Vector2(
-            SCREEN_WIDTH / 2 - instructionsSize.X / 2,
-            SCREEN_HEIGHT - 60
+        // Draw BACK button with rounded corners and hover detection
+        DrawRoundedButton(_spriteBatch, _highScoresBackButtonRect, "BACK", _isHighScoresBackButtonHovered);
+    }
+
+    private void DrawRoundedButton(SpriteBatch spriteBatch, Rectangle buttonRect, string text, bool isHovered)
+    {
+        // Draw button with color change on hover
+        Color buttonColor = isHovered ? Color.Cyan : Color.White;
+        DrawRoundedRectangle(spriteBatch, buttonRect, 10, buttonColor);
+        
+        // Draw centered text on button
+        Vector2 textSize = _barlowFont.MeasureString(text);
+        Vector2 textPosition = new Vector2(
+            buttonRect.X + buttonRect.Width / 2 - textSize.X / 2,
+            buttonRect.Y + buttonRect.Height / 2 - textSize.Y / 2
         );
-        _spriteBatch.DrawString(_barlowFont, instructions, instructionsPosition, Color.LimeGreen, 0f, Vector2.Zero, 1.5f, SpriteEffects.None, 0f);
+        spriteBatch.DrawString(_barlowFont, text, textPosition, Color.Black);
+    }
+
+    private void DrawRoundedRectangle(SpriteBatch spriteBatch, Rectangle rect, int cornerRadius, Color color)
+    {
+        // Draw main body and edges
+        spriteBatch.Draw(
+            CreateFilledRectangle(spriteBatch.GraphicsDevice, rect.Width - cornerRadius * 2, rect.Height, color),
+            new Vector2(rect.X + cornerRadius, rect.Y),
+            Color.White
+        );
+        
+        spriteBatch.Draw(
+            CreateFilledRectangle(spriteBatch.GraphicsDevice, rect.Width, cornerRadius, color),
+            new Vector2(rect.X, rect.Y + cornerRadius),
+            Color.White
+        );
+        
+        spriteBatch.Draw(
+            CreateFilledRectangle(spriteBatch.GraphicsDevice, rect.Width, cornerRadius, color),
+            new Vector2(rect.X, rect.Y + rect.Height - cornerRadius),
+            Color.White
+        );
+        
+        // Draw rounded corners
+        int cornerSize = cornerRadius;
+        DrawCorner(spriteBatch, rect.X + cornerRadius, rect.Y + cornerRadius, cornerSize, color, 0);
+        DrawCorner(spriteBatch, rect.X + rect.Width - cornerRadius, rect.Y + cornerRadius, cornerSize, color, 1);
+        DrawCorner(spriteBatch, rect.X + cornerRadius, rect.Y + rect.Height - cornerRadius, cornerSize, color, 2);
+        DrawCorner(spriteBatch, rect.X + rect.Width - cornerRadius, rect.Y + rect.Height - cornerRadius, cornerSize, color, 3);
+    }
+
+    private void DrawCorner(SpriteBatch spriteBatch, int centerX, int centerY, int radius, Color color, int corner)
+    {
+        // Draw circular corners by plotting pixels in circular pattern
+        for (int i = 0; i < radius; i++)
+        {
+            for (int j = 0; j < radius; j++)
+            {
+                int distanceSquared = i * i + j * j;
+                if (distanceSquared <= radius * radius)
+                {
+                    int x = centerX;
+                    int y = centerY;
+                    
+                    // Adjust coordinates based on corner position
+                    if (corner == 0) { x -= i; y -= j; }
+                    else if (corner == 1) { x += i; y -= j; }
+                    else if (corner == 2) { x -= i; y += j; }
+                    else if (corner == 3) { x += i; y += j; }
+                    
+                    spriteBatch.Draw(
+                        CreateFilledRectangle(spriteBatch.GraphicsDevice, 1, 1, color),
+                        new Vector2(x, y),
+                        Color.White
+                    );
+                }
+            }
+        }
     }
 
     private Texture2D CreateFilledRectangle(GraphicsDevice graphicsDevice, int width, int height, Color color)
     {
+        // Create a solid color texture for drawing rectangles
         Texture2D texture = new Texture2D(graphicsDevice, width, height);
         Color[] data = new Color[width * height];
         for (int i = 0; i < data.Length; i++)
@@ -285,21 +447,10 @@ public class Game1 : Game
         return texture;
     }
     
-    // Public methods for integration with Player/Enemy classes
-    public void AddScore(int points)
-    {
-        _currentScore += points;
-    }
-    
-    public void UpdatePlayerHealth(int health)
-    {
-        _playerHealth = health;
-    }
-    
-    public void IncrementEnemiesDefeated()
-    {
-        _enemiesDefeated++;
-    }
+    // Public methods for game stat updates
+    public void AddScore(int points) => _currentScore += points;
+    public void UpdatePlayerHealth(int health) => _playerHealth = health;
+    public void IncrementEnemiesDefeated() => _enemiesDefeated++;
     
     public int GetCurrentScore() => _currentScore;
     public int GetPlayerHealth() => _playerHealth;
