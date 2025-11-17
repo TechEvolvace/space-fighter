@@ -10,12 +10,12 @@ namespace group_12_assignment7;
 
 public class TitleScreenUI
 {
-    // UI display and button fields
+    // Defines UI display and button fields
     private SpriteFont _font;
     private int _screenWidth;
     private int _screenHeight;
     
-    // Button states and positions
+    // Defines Button states and positions fields and helper functions 
     public bool IsStartButtonPressed { get; private set; }
     public bool IsInstructionsButtonPressed { get; private set; }
     public bool IsHighScoresButtonPressed { get; private set; }
@@ -43,7 +43,7 @@ public class TitleScreenUI
         _isInstructionsHovered = false;
         _isHighScoresHovered = false;
 
-        // Define button positions (centered, stacked vertically)
+        // Define button positions
         int buttonWidth = 200;
         int buttonHeight = 60;
         int centerX = screenWidth / 2;

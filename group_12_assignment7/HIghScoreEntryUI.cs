@@ -7,16 +7,16 @@ namespace group_12_assignment7;
 
 public class HighScoreEntryUI
 {
-    // UI display fields
+    // Defines UI display fields
     private SpriteFont _font;
     private int _screenWidth;
     private int _screenHeight;
     
-    // Text input tracking
+    // Defines Text input tracking fields
     private string _playerName;
     private int _maxNameLength;
     
-    // Submission state
+    // Defines Submission state fields and associated helper functions
     public bool IsSubmitted { get; private set; }
     private KeyboardState _previousKeyboardState;
 

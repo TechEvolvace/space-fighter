@@ -6,17 +6,17 @@ namespace group_12_assignment7;
 
 public class InstructionsUI
 {
-    // UI display fields
+    // Defines UI display fields
     private SpriteFont _font;
     private int _screenWidth;
     private int _screenHeight;
     
-    // Button states
+    // Defines Button states
     public bool IsBackPressed { get; private set; }
     private Rectangle _backButtonRect;
     private bool _isBackButtonHovered;
     
-    // Input tracking
+    // Defines Input tracking
     private KeyboardState _previousKeyboardState;
 
     public InstructionsUI(SpriteFont font, int screenWidth, int screenHeight)

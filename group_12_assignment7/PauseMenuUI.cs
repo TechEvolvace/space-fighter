@@ -6,12 +6,12 @@ namespace group_12_assignment7;
 
 public class PauseMenuUI
 {
-    // UI display fields
+    // Defines UI display fields
     private SpriteFont _font;
     private int _screenWidth;
     private int _screenHeight;
     
-    // Button states and rectangles
+    // Defines Button states and rectangles fields and associated helper functions
     public bool IsResumePressed { get; private set; }
     public bool IsMainMenuPressed { get; private set; }
     
@@ -20,7 +20,7 @@ public class PauseMenuUI
     private bool _isResumeHovered;
     private bool _isMenuHovered;
     
-    // Input tracking for edge detection
+    // Defines Input tracking fields for edge detection
     private KeyboardState _previousKeyboardState;
     private MouseState _previousMouseState;
 

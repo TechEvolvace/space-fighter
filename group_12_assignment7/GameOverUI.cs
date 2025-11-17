@@ -6,16 +6,16 @@ namespace group_12_assignment7;
 
 public class GameOverUI
 {
-    // UI display fields
+    // Defines UI display fields
     private SpriteFont _font;
     private int _screenWidth;
     private int _screenHeight;
     
-    // Game result tracking
+    // Defines Game result tracking fields
     private bool _playerVictorious;
     private int _finalScore;
     
-    // Button states
+    // Defines Button states fields and associated helper functions
     public bool IsReturnToMenuPressed { get; private set; }
     public bool IsPlayAgainPressed { get; private set; }
     
@@ -26,7 +26,7 @@ public class GameOverUI
 
     public GameOverUI(SpriteFont font, int screenWidth, int screenHeight)
     {
-        // Initialize UI components
+        // Initializes UI components
         _font = font;
         _screenWidth = screenWidth;
         _screenHeight = screenHeight;
@@ -35,7 +35,7 @@ public class GameOverUI
         IsReturnToMenuPressed = false;
         IsPlayAgainPressed = false;
 
-        // Define button positions
+        // Defines button positions
         int buttonWidth = 180;
         int buttonHeight = 50;
         int spacing = 40;

@@ -10,21 +10,21 @@ namespace group_12_assignment7;
 
 public class Game1 : Game
 {
-    // Graphics setup and game state fields
+    // Defines Graphics setup and game state fields
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private SpriteFont _barlowFont;
     
-    // Game state tracking
+    // Defines Game state tracking fields
     private GameState _currentGameState;
     private GameState _previousGameState;
     private enum GameState { TitleScreen, Playing, GameOver, HighScoreEntry, HighScoresView, Instructions, Paused }
     
-    // Screen dimensions
+    // Defines Screen dimensions fields
     private const int SCREEN_WIDTH = 1200;
     private const int SCREEN_HEIGHT = 800;
     
-    // UI components
+    // Defines UI components fields
     private TitleScreenUI _titleScreenUI;
     private HUDDisplay _hudDisplay;
     private GameOverUI _gameOverUI;
@@ -33,17 +33,17 @@ public class Game1 : Game
     private InstructionsUI _instructionsUI;
     private PauseMenuUI _pauseMenuUI;
     
-    // Game stats
+    // Defines Game stats fields
     private int _currentScore;
     private int _playerHealth;
     private int _enemiesDefeated;
     private bool _playerVictorious;
     
-    // Pause and input tracking
+    // Define Pause and input tracking fields
     private KeyboardState _previousKeyboardState;
     private bool _pauseStateChanged = false;
     
-    // High scores screen back button
+    // Defines High scores screen back button and properties
     private Rectangle _highScoresBackButtonRect;
     private bool _isHighScoresBackButtonHovered = false;
 
@@ -60,7 +60,7 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        // Set initial game state and player stats
+        // Initialize initial game state and player stats
         _currentGameState = GameState.TitleScreen;
         _previousGameState = GameState.TitleScreen;
         _currentScore = 0;
@@ -106,13 +106,13 @@ public class Game1 : Game
         KeyboardState keyboardState = Keyboard.GetState();
         MouseState mouseState = Mouse.GetState();
         
-        // Exit game with ESC (but not during gameplay)
+        // Exit game program with ESC (but not during gameplay)
         if (keyboardState.IsKeyDown(Keys.Escape) && _currentGameState != GameState.Playing)
             Exit();
         
         _pauseStateChanged = false;
         
-        // Handle pause key - requires P press (not hold) to toggle pause
+        // Handle pause functionality - requires pressing P key to toggle pause
         if (_currentGameState == GameState.Playing && keyboardState.IsKeyDown(Keys.P) && !_previousKeyboardState.IsKeyDown(Keys.P))
         {
             _previousGameState = GameState.Playing;
@@ -294,6 +294,7 @@ public class Game1 : Game
         }
     }
 
+    // Helper function to start a new game by resetting the game stats
     private void StartNewGame()
     {
         // Reset all game stats for new game
@@ -303,6 +304,7 @@ public class Game1 : Game
         _playerVictorious = false;
     }
 
+    // Game will choose which screen to display (a.k.a. draw) that the user is currently in
     protected override void Draw(GameTime gameTime)
     {
         // Clear screen and begin drawing
@@ -341,6 +343,7 @@ public class Game1 : Game
         base.Draw(gameTime);
     }
 
+    // Helper function to display the High Score screen and its contents
     private void DrawHighScoresScreen()
     {
         // Draw semi-transparent background
@@ -363,6 +366,7 @@ public class Game1 : Game
         DrawRoundedButton(_spriteBatch, _highScoresBackButtonRect, "BACK", _isHighScoresBackButtonHovered);
     }
 
+    // Helper funtion to draw the button in a unique shape
     private void DrawRoundedButton(SpriteBatch spriteBatch, Rectangle buttonRect, string text, bool isHovered)
     {
         // Draw button with color change on hover
@@ -378,6 +382,7 @@ public class Game1 : Game
         spriteBatch.DrawString(_barlowFont, text, textPosition, Color.Black);
     }
 
+    // Helper function for DrawRoundedbutton function to help draw the button with rounded corners
     private void DrawRoundedRectangle(SpriteBatch spriteBatch, Rectangle rect, int cornerRadius, Color color)
     {
         // Draw main body and edges
@@ -407,6 +412,7 @@ public class Game1 : Game
         DrawCorner(spriteBatch, rect.X + rect.Width - cornerRadius, rect.Y + rect.Height - cornerRadius, cornerSize, color, 3);
     }
 
+    // Helper function for DrawRoundedRectangle function to draw the rounded corners of the button
     private void DrawCorner(SpriteBatch spriteBatch, int centerX, int centerY, int radius, Color color, int corner)
     {
         // Draw circular corners by plotting pixels in circular pattern
@@ -436,6 +442,7 @@ public class Game1 : Game
         }
     }
 
+    // Helper function to help draw the buttons' unique shape
     private Texture2D CreateFilledRectangle(GraphicsDevice graphicsDevice, int width, int height, Color color)
     {
         // Create a solid color texture for drawing rectangles
@@ -447,7 +454,7 @@ public class Game1 : Game
         return texture;
     }
     
-    // Public methods for game stat updates
+    // Defines public methods for game stat updates
     public void AddScore(int points) => _currentScore += points;
     public void UpdatePlayerHealth(int health) => _playerHealth = health;
     public void IncrementEnemiesDefeated() => _enemiesDefeated++;

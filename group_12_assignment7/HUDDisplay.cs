@@ -5,12 +5,12 @@ namespace group_12_assignment7;
 
 public class HUDDisplay
 {
-    // UI display fields
+    // Defines UI display fields
     private SpriteFont _font;
     private int _screenWidth;
     private int _screenHeight;
     
-    // Game stat tracking
+    // Defines Game stat tracking fields
     private int _currentScore;
     private int _playerHealth;
 
