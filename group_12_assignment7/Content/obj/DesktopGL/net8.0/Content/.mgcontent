@@ -4,9 +4,13 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/AMSdi/Documents/CS 324E Learning/group_12_assignment7/group_12_assignment7/Content/fonts/Barlow.spritefont</File>
+    <File>/Users/samueljsuh/Documents/space-fighter/group_12_assignment7/Content/fonts/Barlow.spritefont</File>
+    <File>/Users/samueljsuh/Documents/space-fighter/group_12_assignment7/Content/laser.jpg</File>
+    <File>/Users/samueljsuh/Documents/space-fighter/group_12_assignment7/Content/milfac.png</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
   </DestFiles>
 </SourceFileCollection>
