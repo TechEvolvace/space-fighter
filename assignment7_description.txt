@@ -1,0 +1,16 @@
+In this project the user flies the Millennium Falcon in a top down shooter. 
+The user tries to avoid enemy Tie Fighters and the lasers they shoot at the player.
+If the user takes too much damage their health will deplete and they will die.
+If the user reached a high enough score by shooting enoough Tie Fighters then they will win the game and get a High Score screen.
+If the player doesn't get a high enough score they will lose and get a defeat screen.
+Game1 handles the game functionality.
+The Falcon class handles the player functionality.
+The TieFighter class handles the enemy functionality.
+EnemySpawner is timer class that handles spawning enemies every few seconds.
+The Laser class handles functionality for laser objects shot by the player.
+GameOverUI handles the game over screen interface.
+HighScoreEntryUI handles the game over screen interface.
+HUDDisplayUI handles the HUD elements in the game.
+InstructionsUI handles the Instuctions screen interface.
+PauseMenuUI handles the Pause menu screen interface.
+TitleScreenUI handles the title screen interface.
