@@ -7,81 +7,58 @@ namespace group_12_assignment7
 {
     public class EnemySpawner
     {
-        public List<TieFighter> Enemies = new List<TieFighter>();
+        public List<TieFighter> TieFighters { get; private set; } = new();
+        private float spawnTimer = 0f;
+        private float spawnInterval = 2f; // Spawn every 2 seconds
+        private Random random = new Random();
 
-        private Texture2D tieTexture;
-        private Texture2D explosionTexture;
-        private Texture2D laserTexture;
+        // Define 8 spawn points offscreen (x,y)
+        private Vector2[] spawnPoints;
 
-        private float spawnInterval;
-        private float timeSinceLastSpawn = 0f;
+        private int screenWidth;
+        private int screenHeight;
 
-        private Random rand = new Random();
-
-        private GraphicsDevice graphicsDevice;
-
-        public EnemySpawner(float spawnInterval, Texture2D tieTexture, Texture2D explosionTexture, Texture2D laserTexture, GraphicsDevice graphicsDevice)
+        public EnemySpawner(int screenWidth, int screenHeight)
         {
-            this.spawnInterval = spawnInterval;
-            this.tieTexture = tieTexture;
-            this.explosionTexture = explosionTexture;
-            this.laserTexture = laserTexture;
-            this.graphicsDevice = graphicsDevice;
+            this.screenWidth = screenWidth;
+            this.screenHeight = screenHeight;
+
+            spawnPoints = new Vector2[]
+            {
+                new Vector2(-100, -100), // top-left
+                new Vector2(screenWidth / 2, -100), // top-center
+                new Vector2(screenWidth + 100, -100), // top-right
+                new Vector2(screenWidth + 100, screenHeight / 2), // middle-right
+                new Vector2(screenWidth + 100, screenHeight + 100), // bottom-right
+                new Vector2(screenWidth / 2, screenHeight + 100), // bottom-center
+                new Vector2(-100, screenHeight + 100), // bottom-left
+                new Vector2(-100, screenHeight / 2) // middle-left
+            };
         }
 
-        public void Update(GameTime gameTime, Vector2 falconPosition, Texture2D falconTexture, float falconScale)
+        public void Update(GameTime gameTime, Texture2D tieTexture, Texture2D explosionTexture, Texture2D laserTexture)
         {
-            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            timeSinceLastSpawn += dt;
+            spawnTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (timeSinceLastSpawn >= spawnInterval)
+            if (spawnTimer >= spawnInterval)
             {
-                SpawnEnemy();
-                timeSinceLastSpawn = 0f;
+                SpawnTieFighter(tieTexture, explosionTexture, laserTexture);
+                spawnTimer = 0f;
             }
 
-            for (int i = Enemies.Count - 1; i >= 0; i--)
-            {
-                var enemy = Enemies[i];
-                enemy.Update(gameTime, falconPosition, falconTexture, falconScale);
-                if (!enemy.IsAlive && !enemy.IsExploding())
-                {
-                    Enemies.RemoveAt(i);
-                }
-            }
+            // You can also update TieFighters here if desired
         }
 
-        private void SpawnEnemy()
-            {
-                int screenWidth = graphicsDevice.Viewport.Width;
-                int screenHeight = graphicsDevice.Viewport.Height;
-                int buffer = 100;
+        private void SpawnTieFighter(Texture2D tieTexture, Texture2D explosionTexture, Texture2D laserTexture)
+        {
+            // Pick a random spawn point from the 8 predefined positions
+            Vector2 spawnPos = spawnPoints[random.Next(spawnPoints.Length)];
 
-                Vector2[] spawnPositions = new Vector2[]
-                {
-                    new Vector2(screenWidth / 4, -buffer),
-                    new Vector2(3 * screenWidth / 4, -buffer),
-                    new Vector2(screenWidth / 4, screenHeight + buffer),
-                    new Vector2(3 * screenWidth / 4, screenHeight + buffer),
-                    new Vector2(-buffer, screenHeight / 4),
-                    new Vector2(-buffer, 3 * screenHeight / 4),
-                    new Vector2(screenWidth + buffer, screenHeight / 4),
-                    new Vector2(screenWidth + buffer, 3 * screenHeight / 4),
-                };
-
-                int spawnIndex = rand.Next(spawnPositions.Length);
-                Vector2 spawnPos = spawnPositions[spawnIndex];
-
-                TieFighter newEnemy = new TieFighter(spawnPos, tieTexture, explosionTexture, laserTexture);
-                Enemies.Add(newEnemy);
-            }
-
-        public void Draw(SpriteBatch spriteBatch)
-            {
-                foreach (var enemy in Enemies)
-                {
-                    enemy.Draw(spriteBatch);
-                }
-            }
+            TieFighter tie = new TieFighter(spawnPos, tieTexture, explosionTexture, laserTexture);
+            TieFighters.Add(tie);
+        }
     }
 }
+
+
+
