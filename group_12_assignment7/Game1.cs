@@ -35,7 +35,6 @@ public class Game1 : Game
     
     // Defines Game stats fields
     private int _currentScore;
-    private int _playerHealth;
     private int _enemiesDefeated;
     private bool _playerVictorious;
     
@@ -46,6 +45,11 @@ public class Game1 : Game
     // Defines High scores screen back button and properties
     private Rectangle _highScoresBackButtonRect;
     private bool _isHighScoresBackButtonHovered = false;
+
+    // === GAME OBJECTS & TEXTURES (Falcon/Laser Implementation) ===
+    private Falcon _playerFalcon;
+    private Texture2D _falconTexture;
+    private Texture2D _playerLaserTexture;
 
     public Game1()
     {
@@ -64,7 +68,6 @@ public class Game1 : Game
         _currentGameState = GameState.TitleScreen;
         _previousGameState = GameState.TitleScreen;
         _currentScore = 0;
-        _playerHealth = 100;
         _enemiesDefeated = 0;
         _playerVictorious = false;
         _previousKeyboardState = Keyboard.GetState();
@@ -87,6 +90,10 @@ public class Game1 : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         _barlowFont = Content.Load<SpriteFont>("fonts/Barlow");
         
+        // Load Game Object Textures
+        _falconTexture = Content.Load<Texture2D>("milfac");
+        _playerLaserTexture = Content.Load<Texture2D>("laser");
+
         // Load and initialize score manager
         _scoreManager = new ScoreManager("highscores.txt", _barlowFont);
         _scoreManager.LoadScores();
@@ -98,6 +105,10 @@ public class Game1 : Game
         _highScoreEntryUI = new HighScoreEntryUI(_barlowFont, SCREEN_WIDTH, SCREEN_HEIGHT);
         _instructionsUI = new InstructionsUI(_barlowFont, SCREEN_WIDTH, SCREEN_HEIGHT);
         _pauseMenuUI = new PauseMenuUI(_barlowFont, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // Initialize the Falcon object after textures are loaded
+        Vector2 startPos = new Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT * 0.8f);
+        _playerFalcon = new Falcon(_falconTexture, _playerLaserTexture, startPos);
     }
 
     protected override void Update(GameTime gameTime)
@@ -180,13 +191,16 @@ public class Game1 : Game
 
     private void UpdateGameplay(GameTime gameTime, KeyboardState keyboardState, MouseState mouseState)
     {
-        // Update HUD with current game stats
+        // 1. Update the Falcon (Handles movement and shooting)
+        _playerFalcon.Update(gameTime, keyboardState, mouseState);
+
+        // 2. Update HUD with current game stats
         _hudDisplay.UpdateScore(_currentScore);
-        _hudDisplay.UpdateHealth(_playerHealth);
+        _hudDisplay.UpdateHealth(_playerFalcon.Health); // Use Falcon's actual health
         _hudDisplay.UpdateEnemiesDefeated(_enemiesDefeated);
         
-        // Check win/loss conditions
-        if (_playerHealth <= 0)
+        // 3. Check win/loss conditions
+        if (_playerFalcon.Health <= 0) // Use Falcon's actual health
         {
             _playerVictorious = false;
             TransitionToGameOver();
@@ -299,16 +313,19 @@ public class Game1 : Game
     {
         // Reset all game stats for new game
         _currentScore = 0;
-        _playerHealth = 100;
         _enemiesDefeated = 0;
         _playerVictorious = false;
+
+        // Reset Falcon's state (Health and position)
+        _playerFalcon.Health = 100;
+        _playerFalcon.Position = new Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT * 0.8f);
     }
 
     // Game will choose which screen to display (a.k.a. draw) that the user is currently in
     protected override void Draw(GameTime gameTime)
     {
-        // Clear screen and begin drawing
-        GraphicsDevice.Clear(Color.Black);
+        // Clear screen and begin drawing (Background is Black)
+        GraphicsDevice.Clear(Color.Black); 
         _spriteBatch.Begin();
 
         // Draw appropriate screen based on game state
@@ -317,9 +334,21 @@ public class Game1 : Game
             case GameState.TitleScreen:
                 _titleScreenUI.Draw(_spriteBatch);
                 break;
+
             case GameState.Playing:
+            case GameState.Paused:
+                // Draw all game objects first
+                _playerFalcon.Draw(_spriteBatch); // Draw the Falcon and its lasers
+
+                // Then draw the HUD/UI overlays
                 _hudDisplay.Draw(_spriteBatch);
+                
+                if (_currentGameState == GameState.Paused)
+                {
+                    _pauseMenuUI.Draw(_spriteBatch);
+                }
                 break;
+                
             case GameState.GameOver:
                 _gameOverUI.Draw(_spriteBatch);
                 break;
@@ -332,10 +361,6 @@ public class Game1 : Game
                 break;
             case GameState.Instructions:
                 _instructionsUI.Draw(_spriteBatch);
-                break;
-            case GameState.Paused:
-                _hudDisplay.Draw(_spriteBatch);
-                _pauseMenuUI.Draw(_spriteBatch);
                 break;
         }
 
@@ -456,10 +481,9 @@ public class Game1 : Game
     
     // Defines public methods for game stat updates
     public void AddScore(int points) => _currentScore += points;
-    public void UpdatePlayerHealth(int health) => _playerHealth = health;
     public void IncrementEnemiesDefeated() => _enemiesDefeated++;
     
     public int GetCurrentScore() => _currentScore;
-    public int GetPlayerHealth() => _playerHealth;
+    public int GetPlayerHealth() => _playerFalcon.Health; // Get health from Falcon
     public int GetEnemiesDefeated() => _enemiesDefeated;
 }

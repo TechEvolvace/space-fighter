@@ -295,19 +295,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\AMSdi\\.nuget\\packages\\": {}
+    "/Users/samueljsuh/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\AMSdi\\Documents\\CS 324E Learning\\group_12_assignment7\\group_12_assignment7\\group_12_assignment7.csproj",
+      "projectUniqueName": "/Users/samueljsuh/Documents/space-fighter/group_12_assignment7/group_12_assignment7.csproj",
       "projectName": "group_12_assignment7",
-      "projectPath": "C:\\Users\\AMSdi\\Documents\\CS 324E Learning\\group_12_assignment7\\group_12_assignment7\\group_12_assignment7.csproj",
-      "packagesPath": "C:\\Users\\AMSdi\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\AMSdi\\Documents\\CS 324E Learning\\group_12_assignment7\\group_12_assignment7\\obj\\",
+      "projectPath": "/Users/samueljsuh/Documents/space-fighter/group_12_assignment7/group_12_assignment7.csproj",
+      "packagesPath": "/Users/samueljsuh/.nuget/packages/",
+      "outputPath": "/Users/samueljsuh/Documents/space-fighter/group_12_assignment7/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\AMSdi\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/Users/samueljsuh/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -363,15 +363,11 @@
             "version": "[8.0.19, 8.0.19]"
           },
           {
-            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "name": "Microsoft.NETCore.App.Host.osx-arm64",
             "version": "[8.0.19, 8.0.19]"
           },
           {
             "name": "Microsoft.NETCore.App.Ref",
-            "version": "[8.0.19, 8.0.19]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
             "version": "[8.0.19, 8.0.19]"
           }
         ],
@@ -380,7 +376,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.304/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
